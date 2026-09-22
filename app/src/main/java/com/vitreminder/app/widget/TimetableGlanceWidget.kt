@@ -135,7 +135,7 @@ class TimetableGlanceWidget : GlanceAppWidget() {
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
-                .background(ColorProvider(androidx.compose.ui.graphics.Color(0xFF1E1E2E)))
+                .background(ColorProvider(androidx.compose.ui.graphics.Color(0xFF0B0D14)))
                 .padding(10.dp)
                 .clickable(actionStartActivity<MainActivity>())
         ) {
@@ -147,7 +147,7 @@ class TimetableGlanceWidget : GlanceAppWidget() {
                 Text(
                     text = "$division • Batch $batch",
                     style = TextStyle(
-                        color = ColorProvider(androidx.compose.ui.graphics.Color(0xFF89B4FA)),
+                        color = ColorProvider(androidx.compose.ui.graphics.Color(0xFF38BDF8)),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     ),
@@ -166,7 +166,7 @@ class TimetableGlanceWidget : GlanceAppWidget() {
                 Text(
                     text = "VIT",
                     style = TextStyle(
-                        color = ColorProvider(androidx.compose.ui.graphics.Color(0xFFA6ADC8)),
+                        color = ColorProvider(androidx.compose.ui.graphics.Color(0xFF94A3B8)),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -181,23 +181,23 @@ class TimetableGlanceWidget : GlanceAppWidget() {
                 val isOngoing = currentSession != null
                 val isFirstClassToday = !isNextDayPreview && todaySessions.firstOrNull()?.id == activeSession.id && currentMin < activeSession.startMinute
                 val statusLabel = when {
-                    isOngoing -> "🔴 ONGOING CLASS"
+                    isOngoing -> "🟢 LIVE NOW"
                     isNextDayPreview -> "🌅 TOMORROW (${nextDayName.take(3).uppercase()})"
                     isFirstClassToday -> "📅 TODAY'S 1ST CLASS"
                     else -> "⏱️ NEXT UP"
                 }
                 val statusColor = when {
-                    isOngoing -> 0xFFA6E3A1
-                    isNextDayPreview -> 0xFF89B4FA
-                    isFirstClassToday -> 0xFFF9E2AF
-                    else -> 0xFFF9E2AF
+                    isOngoing -> 0xFF10B981
+                    isNextDayPreview -> 0xFFA855F7
+                    isFirstClassToday -> 0xFFF59E0B
+                    else -> 0xFFF59E0B
                 }
 
                 Column(
                     modifier = GlanceModifier
                         .fillMaxWidth()
-                        .background(ColorProvider(androidx.compose.ui.graphics.Color(0xFF313244)))
-                        .padding(8.dp)
+                        .background(ColorProvider(androidx.compose.ui.graphics.Color(0xFF181B28)))
+                        .padding(9.dp)
                 ) {
                     Row(
                         modifier = GlanceModifier.fillMaxWidth(),
@@ -216,7 +216,7 @@ class TimetableGlanceWidget : GlanceAppWidget() {
                             Text(
                                 text = "📍 Room ${activeSession.classroom}",
                                 style = TextStyle(
-                                    color = ColorProvider(androidx.compose.ui.graphics.Color(0xFFF38BA8)),
+                                    color = ColorProvider(androidx.compose.ui.graphics.Color(0xFFF43F5E)),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -224,13 +224,13 @@ class TimetableGlanceWidget : GlanceAppWidget() {
                         }
                     }
 
-                    Spacer(modifier = GlanceModifier.height(3.dp))
+                    Spacer(modifier = GlanceModifier.height(4.dp))
 
                     Text(
                         text = activeSession.displayTitle,
                         style = TextStyle(
-                            color = ColorProvider(androidx.compose.ui.graphics.Color(0xFFCDD6F4)),
-                            fontSize = 13.5.sp,
+                            color = ColorProvider(androidx.compose.ui.graphics.Color(0xFFF8FAFC)),
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Bold
                         ),
                         maxLines = 1
@@ -248,7 +248,7 @@ class TimetableGlanceWidget : GlanceAppWidget() {
                     Text(
                         text = timeDesc,
                         style = TextStyle(
-                            color = ColorProvider(androidx.compose.ui.graphics.Color(0xFFBAC2DE)),
+                            color = ColorProvider(androidx.compose.ui.graphics.Color(0xFF94A3B8)),
                             fontSize = 10.5.sp
                         ),
                         maxLines = 1
@@ -259,13 +259,13 @@ class TimetableGlanceWidget : GlanceAppWidget() {
                 Column(
                     modifier = GlanceModifier
                         .fillMaxWidth()
-                        .background(ColorProvider(androidx.compose.ui.graphics.Color(0xFF313244)))
+                        .background(ColorProvider(androidx.compose.ui.graphics.Color(0xFF181B28)))
                         .padding(10.dp)
                 ) {
                     Text(
                         text = if (todaySessions.isEmpty()) "No classes scheduled today 🌴" else "All done for today! 🎉",
                         style = TextStyle(
-                            color = ColorProvider(androidx.compose.ui.graphics.Color(0xFFA6E3A1)),
+                            color = ColorProvider(androidx.compose.ui.graphics.Color(0xFF10B981)),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -273,7 +273,7 @@ class TimetableGlanceWidget : GlanceAppWidget() {
                     Text(
                         text = "Tap to open timetable",
                         style = TextStyle(
-                            color = ColorProvider(androidx.compose.ui.graphics.Color(0xFFA6ADC8)),
+                            color = ColorProvider(androidx.compose.ui.graphics.Color(0xFF94A3B8)),
                             fontSize = 10.5.sp
                         )
                     )

@@ -95,7 +95,7 @@ class NotesGlanceWidget : GlanceAppWidget() {
         Column(
             modifier = GlanceModifier
                 .fillMaxSize()
-                .background(ColorProvider(androidx.compose.ui.graphics.Color(0xFF1E1E2E)))
+                .background(ColorProvider(androidx.compose.ui.graphics.Color(0xFF0B0D14)))
                 .padding(12.dp)
                 .clickable(actionStartActivity<MainActivity>())
         ) {
@@ -105,9 +105,9 @@ class NotesGlanceWidget : GlanceAppWidget() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "📝 Tasks & Reminders",
+                    text = "📝 Tasks & Notes",
                     style = TextStyle(
-                        color = ColorProvider(androidx.compose.ui.graphics.Color(0xFFCBA6F7)),
+                        color = ColorProvider(androidx.compose.ui.graphics.Color(0xFFA855F7)),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     ),
@@ -116,9 +116,9 @@ class NotesGlanceWidget : GlanceAppWidget() {
 
                 if (activeSession != null) {
                     Text(
-                        text = "🔴 ${activeSession.displayTitle.take(12)}",
+                        text = "🟢 ${activeSession.displayTitle.take(12)}",
                         style = TextStyle(
-                            color = ColorProvider(androidx.compose.ui.graphics.Color(0xFFA6E3A1)),
+                            color = ColorProvider(androidx.compose.ui.graphics.Color(0xFF10B981)),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         ),
@@ -143,14 +143,14 @@ class NotesGlanceWidget : GlanceAppWidget() {
                     modifier = GlanceModifier
                         .fillMaxWidth()
                         .defaultWeight()
-                        .background(ColorProvider(androidx.compose.ui.graphics.Color(0xFF313244)))
+                        .background(ColorProvider(androidx.compose.ui.graphics.Color(0xFF181B28)))
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "No pending tasks or class notes! ✨",
                         style = TextStyle(
-                            color = ColorProvider(androidx.compose.ui.graphics.Color(0xFFA6E3A1)),
+                            color = ColorProvider(androidx.compose.ui.graphics.Color(0xFF10B981)),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -159,7 +159,7 @@ class NotesGlanceWidget : GlanceAppWidget() {
                     Text(
                         text = if (activeSession != null) "Tap to jot down a note for ${activeSession.displayTitle}." else "Tap to add a reminder or checklist item.",
                         style = TextStyle(
-                            color = ColorProvider(androidx.compose.ui.graphics.Color(0xFFA6ADC8)),
+                            color = ColorProvider(androidx.compose.ui.graphics.Color(0xFF94A3B8)),
                             fontSize = 10.5.sp
                         )
                     )
@@ -174,12 +174,12 @@ class NotesGlanceWidget : GlanceAppWidget() {
                 ) {
                     displayList.forEach { note ->
                         val checkSymbol = if (note.isCompleted) "☑️" else "⬜"
-                        val textColor = if (note.isCompleted) 0xFF6C7086 else 0xFFCDD6F4
+                        val textColor = if (note.isCompleted) 0xFF64748B else 0xFFF8FAFC
 
                         Row(
                             modifier = GlanceModifier
                                 .fillMaxWidth()
-                                .background(ColorProvider(androidx.compose.ui.graphics.Color(0xFF313244)))
+                                .background(ColorProvider(androidx.compose.ui.graphics.Color(0xFF181B28)))
                                 .padding(horizontal = 8.dp, vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -209,7 +209,7 @@ class NotesGlanceWidget : GlanceAppWidget() {
                                     Text(
                                         text = note.displayTag,
                                         style = TextStyle(
-                                            color = ColorProvider(androidx.compose.ui.graphics.Color(0xFF89B4FA)),
+                                            color = ColorProvider(androidx.compose.ui.graphics.Color(0xFF38BDF8)),
                                             fontSize = 9.5.sp
                                         ),
                                         maxLines = 1

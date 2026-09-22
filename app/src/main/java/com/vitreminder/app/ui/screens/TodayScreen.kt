@@ -1,10 +1,13 @@
 package com.vitreminder.app.ui.screens
 
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -92,6 +96,20 @@ fun TodayScreen(
     val displayedSessions = if (isShowingNextDay) nextDaySessions else todaySessions
     val activeDayOfWeek = if (isShowingNextDay) targetNextDay.first else dayOfWeek
     val displayedBreaks = timetable.getBreaksForDay(activeDayOfWeek, displayedSessions)
+
+    // Pinterest Filter Chips State
+    var selectedFilter by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("All") }
+    val lectureCount = displayedSessions.count { it.loadType.lowercase() != "lab" }
+    val labCount = displayedSessions.count { it.loadType.lowercase() == "lab" }
+    val breakCount = displayedBreaks.size
+    val allCount = displayedSessions.size + breakCount
+
+    val filteredSessions = when (selectedFilter) {
+        "Lectures" -> displayedSessions.filter { it.loadType.lowercase() != "lab" }
+        "Labs" -> displayedSessions.filter { it.loadType.lowercase() == "lab" }
+        "Breaks" -> emptyList()
+        else -> displayedSessions
+    }
 
     // Current & next session calculation
     val currentSession = if (!isShowingNextDay) {
@@ -301,15 +319,87 @@ fun TodayScreen(
             )
         }
 
-        // Section Title
+        // Section Title & Pinterest Filter Chips
         item {
-            Text(
-                text = if (isShowingNextDay) "${targetNextDay.second}'s Schedule (Tomorrow)" else "Today's Schedule",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = TextPrimary,
-                modifier = Modifier.padding(top = 8.dp)
-            )
+            Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (isShowingNextDay) "${targetNextDay.second}'s Schedule (Tomorrow)" else "Today's Schedule",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = "$allCount items",
+                        fontSize = 12.sp,
+                        color = TextMuted,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Pinterest Tactile Filter Chips
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    val filterOptions = listOf(
+                        "All" to allCount,
+                        "Lectures" to lectureCount,
+                        "Labs" to labCount,
+                        "Breaks" to breakCount
+                    )
+                    items(filterOptions) { (fName, count) ->
+                        val isSelected = selectedFilter == fName
+                        val chipColor = when (fName) {
+                            "Lectures" -> TheoryColor
+                            "Labs" -> LabColor
+                            "Breaks" -> BreakColor
+                            else -> AccentGreen
+                        }
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(if (isSelected) chipColor.copy(alpha = 0.2f) else CardDark)
+                                .border(
+                                    width = 1.dp,
+                                    color = if (isSelected) chipColor else GlassBorder,
+                                    shape = RoundedCornerShape(20.dp)
+                                )
+                                .clickable { selectedFilter = fName }
+                                .padding(horizontal = 14.dp, vertical = 7.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = fName,
+                                    fontSize = 12.5.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                                    color = if (isSelected) TextPrimary else TextSecondary
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .background(if (isSelected) chipColor else CardDarkHover)
+                                        .padding(horizontal = 6.dp, vertical = 1.dp)
+                                ) {
+                                    Text(
+                                        text = count.toString(),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isSelected) SurfaceDark else TextMuted
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // Sessions & Breaks List
@@ -318,6 +408,7 @@ fun TodayScreen(
                 Card(
                     colors = CardDefaults.cardColors(containerColor = CardDark),
                     shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, GlassBorder),
                     modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
                 ) {
                     Column(
@@ -355,18 +446,44 @@ fun TodayScreen(
                     }
                 }
             }
+        } else if (selectedFilter == "Breaks") {
+            if (displayedBreaks.isEmpty()) {
+                item {
+                    Text(
+                        text = "No breaks scheduled for this day.",
+                        color = TextMuted,
+                        fontSize = 13.sp,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            } else {
+                items(displayedBreaks) { brk ->
+                    BreakCard(breakPeriod = brk)
+                }
+            }
+        } else if (filteredSessions.isEmpty()) {
+            item {
+                Text(
+                    text = "No $selectedFilter scheduled for this day.",
+                    color = TextMuted,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
         } else {
-            items(displayedSessions) { session ->
+            items(filteredSessions) { session ->
                 SessionCard(
                     session = session,
                     currentMinute = if (isShowingNextDay) -1 else currentMinute,
                     onOpenRoomNavigator = { room -> navigatorRoomNumber = room }
                 )
 
-                // Check if a break follows this session
-                val followingBreak = displayedBreaks.find { it.startTime == session.endTime }
-                if (followingBreak != null) {
-                    BreakCard(breakPeriod = followingBreak)
+                // Check if a break follows this session (only on "All" filter)
+                if (selectedFilter == "All") {
+                    val followingBreak = displayedBreaks.find { it.startTime == session.endTime }
+                    if (followingBreak != null) {
+                        BreakCard(breakPeriod = followingBreak)
+                    }
                 }
             }
         }
@@ -404,12 +521,43 @@ private fun HeroCard(
     onAddNoteForSession: (ClassSession) -> Unit = {},
     onOpenRoomNavigator: (String) -> Unit = {}
 ) {
+    val heroBrush = when {
+        currentSession != null -> HeroOngoingBrush
+        currentBreak != null -> HeroBreakBrush
+        isNextDayPreview -> HeroUpcomingBrush
+        nextSession != null -> HeroUpcomingBrush
+        else -> HeroFreeDayBrush
+    }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(850, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "alpha"
+    )
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 0.85f,
+        targetValue = 1.25f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(850, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "scale"
+    )
+
     Card(
-        colors = CardDefaults.cardColors(containerColor = CardDark),
-        shape = RoundedCornerShape(18.dp),
-        modifier = Modifier.fillMaxWidth()
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(1.dp, GlassBorderActive),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(heroBrush, RoundedCornerShape(20.dp))
     ) {
-        Column(modifier = Modifier.padding(18.dp)) {
+        Column(modifier = Modifier.padding(20.dp)) {
             when {
                 isNextDayPreview && nextSession != null -> {
                     // Previewing Tomorrow's First Class
@@ -421,7 +569,7 @@ private fun HeroCard(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
-                                    .size(10.dp)
+                                    .size(9.dp)
                                     .clip(CircleShape)
                                     .background(AccentPurple)
                             )
@@ -429,42 +577,50 @@ private fun HeroCard(
                             Text(
                                 text = "TOMORROW'S FIRST CLASS",
                                 color = AccentPurple,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 12.sp
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 11.5.sp,
+                                letterSpacing = 0.6.sp
                             )
                         }
 
                         if (nextSession.classroom.isNotBlank()) {
                             val decoded = com.vitreminder.app.util.RoomDecoder.decode(nextSession.classroom)
-                            Column(
-                                horizontalAlignment = Alignment.End,
+                            Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color(0x33000000))
+                                    .border(1.dp, GlassBorder, RoundedCornerShape(10.dp))
                                     .clickable { onOpenRoomNavigator(nextSession.classroom) }
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
-                                Text(
-                                    text = "📍 Room ${nextSession.classroom}",
-                                    color = AccentRed,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 15.sp
-                                )
-                                Text(
-                                    text = decoded.shortLocation,
-                                    color = AccentBlue,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 10.sp
-                                )
+                                Column(horizontalAlignment = Alignment.End) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "📍 Room ${nextSession.classroom}",
+                                            color = AccentRed,
+                                            fontWeight = FontWeight.ExtraBold,
+                                            fontSize = 14.sp
+                                        )
+                                        Spacer(modifier = Modifier.width(2.dp))
+                                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                                    }
+                                    Text(
+                                        text = decoded.shortLocation,
+                                        color = AccentPurple,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 10.sp
+                                    )
+                                }
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
                         text = nextSession.displayTitle,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.ExtraBold,
                         color = TextPrimary
                     )
 
@@ -476,60 +632,78 @@ private fun HeroCard(
                         color = TextSecondary
                     )
                 }
+
                 currentSession != null -> {
-                    // Ongoing Class
+                    // Ongoing Class - Spotify Now Playing Style
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(10.dp)
-                                    .clip(CircleShape)
-                                    .background(AccentGreen)
-                            )
+                            Box(contentAlignment = Alignment.Center, modifier = Modifier.size(16.dp)) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(14.dp)
+                                        .graphicsLayer(scaleX = pulseScale, scaleY = pulseScale, alpha = pulseAlpha)
+                                        .clip(CircleShape)
+                                        .background(AccentGreen.copy(alpha = 0.45f))
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(AccentGreen)
+                                )
+                            }
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "ONGOING NOW",
+                                text = "LIVE NOW",
                                 color = AccentGreen,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 12.sp
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 12.sp,
+                                letterSpacing = 0.8.sp
                             )
                         }
 
                         if (currentSession.classroom.isNotBlank()) {
                             val decoded = com.vitreminder.app.util.RoomDecoder.decode(currentSession.classroom)
-                            Column(
-                                horizontalAlignment = Alignment.End,
+                            Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color(0x33000000))
+                                    .border(1.dp, GlassBorder, RoundedCornerShape(10.dp))
                                     .clickable { onOpenRoomNavigator(currentSession.classroom) }
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
-                                Text(
-                                    text = "📍 Room ${currentSession.classroom}",
-                                    color = AccentRed,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 15.sp
-                                )
-                                Text(
-                                    text = decoded.shortLocation,
-                                    color = AccentBlue,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 10.sp
-                                )
+                                Column(horizontalAlignment = Alignment.End) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "📍 Room ${currentSession.classroom}",
+                                            color = AccentRed,
+                                            fontWeight = FontWeight.ExtraBold,
+                                            fontSize = 14.sp
+                                        )
+                                        Spacer(modifier = Modifier.width(2.dp))
+                                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                                    }
+                                    Text(
+                                        text = decoded.shortLocation,
+                                        color = AccentGreen,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 10.sp
+                                    )
+                                }
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
                         text = currentSession.displayTitle,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.ExtraBold,
                         color = TextPrimary
                     )
 
@@ -541,35 +715,44 @@ private fun HeroCard(
                         color = TextSecondary
                     )
 
-                    val remaining = currentSession.endMinute - currentMinute
-                    Spacer(modifier = Modifier.height(8.dp))
+                    val remaining = (currentSession.endMinute - currentMinute).coerceAtLeast(0)
+                    val elapsed = (currentMinute - currentSession.startMinute).coerceAtLeast(0)
+                    val progress = (elapsed.toFloat() / currentSession.durationMinutes.coerceAtLeast(1)).coerceIn(0f, 1f)
+                    val percent = (progress * 100).toInt()
+
+                    Spacer(modifier = Modifier.height(10.dp))
                     LinearProgressIndicator(
-                        progress = { (currentMinute - currentSession.startMinute).toFloat() / currentSession.durationMinutes },
-                        modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
+                        progress = { progress },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp)),
                         color = AccentGreen,
-                        trackColor = CardDarkHover,
+                        trackColor = Color(0x33FFFFFF)
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "$remaining mins left",
-                            fontSize = 11.sp,
-                            color = TextMuted
+                            text = "⏳ $remaining mins left • ${percent}% elapsed",
+                            fontSize = 11.5.sp,
+                            color = TextSecondary,
+                            fontWeight = FontWeight.Medium
                         )
                         FilledTonalButton(
                             onClick = { onAddNoteForSession(currentSession) },
                             colors = ButtonDefaults.filledTonalButtonColors(containerColor = AccentGreen.copy(alpha = 0.2f)),
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                            shape = RoundedCornerShape(6.dp),
-                            modifier = Modifier.height(28.dp)
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
+                            shape = RoundedCornerShape(20.dp),
+                            modifier = Modifier.height(30.dp)
                         ) {
                             Icon(Icons.Default.EditNote, contentDescription = null, tint = AccentGreen, modifier = Modifier.size(15.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("+ Class Note", color = AccentGreen, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text("+ Note", color = AccentGreen, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -586,11 +769,12 @@ private fun HeroCard(
                             fontSize = 13.sp
                         )
                     }
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "${currentBreak.formattedDuration} free time to relax or grab lunch",
                         color = TextPrimary,
-                        fontSize = 14.sp
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                     if (nextSession != null) {
                         Spacer(modifier = Modifier.height(6.dp))
@@ -623,41 +807,49 @@ private fun HeroCard(
                         Text(
                             text = badgeTitle,
                             color = AccentYellow,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 11.5.sp,
+                            letterSpacing = 0.5.sp
                         )
 
                         if (nextSession.classroom.isNotBlank()) {
                             val decoded = com.vitreminder.app.util.RoomDecoder.decode(nextSession.classroom)
-                            Column(
-                                horizontalAlignment = Alignment.End,
+                            Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color(0x33000000))
+                                    .border(1.dp, GlassBorder, RoundedCornerShape(10.dp))
                                     .clickable { onOpenRoomNavigator(nextSession.classroom) }
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
-                                Text(
-                                    text = "📍 Room ${nextSession.classroom}",
-                                    color = AccentRed,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 15.sp
-                                )
-                                Text(
-                                    text = decoded.shortLocation,
-                                    color = AccentBlue,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 10.sp
-                                )
+                                Column(horizontalAlignment = Alignment.End) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "📍 Room ${nextSession.classroom}",
+                                            color = AccentRed,
+                                            fontWeight = FontWeight.ExtraBold,
+                                            fontSize = 14.sp
+                                        )
+                                        Spacer(modifier = Modifier.width(2.dp))
+                                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                                    }
+                                    Text(
+                                        text = decoded.shortLocation,
+                                        color = AccentYellow,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 10.sp
+                                    )
+                                }
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
                         text = nextSession.displayTitle,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.ExtraBold,
                         color = TextPrimary
                     )
 
@@ -733,83 +925,99 @@ private fun SessionCard(
         colors = CardDefaults.cardColors(
             containerColor = if (isCurrent) CardDarkHover else CardDark
         ),
-        shape = RoundedCornerShape(14.dp),
-        border = if (isCurrent) androidx.compose.foundation.BorderStroke(1.5.dp, AccentGreen) else null,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, if (isCurrent) AccentGreen.copy(alpha = 0.7f) else GlassBorder),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Time Badge
-                Text(
-                    text = "${session.startTime} - ${session.endTime}",
-                    color = if (isPast) TextMuted else TextPrimary,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
-                )
-
-                // Load Type Pill
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(typeColor.copy(alpha = 0.2f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = session.loadType.uppercase(),
-                        color = typeColor,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 10.sp
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            // Subject Title
-            Text(
-                text = session.displayTitle,
-                fontWeight = FontWeight.Bold,
-                fontSize = 15.sp,
-                color = if (isPast) TextMuted else TextPrimary
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Left Accent Pill Indicator
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .height(46.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(if (isCurrent) AccentGreen else typeColor)
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
-            // Room and Faculty row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = if (session.facultyName.isNotBlank()) "👨‍🏫 ${session.facultyName}" else "",
-                    fontSize = 12.sp,
-                    color = TextSecondary,
-                    maxLines = 1,
-                    modifier = Modifier.weight(1f, fill = false)
-                )
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "${session.startTime} - ${session.endTime}",
+                        color = if (isPast) TextMuted else TextPrimary,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.5.sp
+                    )
 
-                if (session.classroom.isNotBlank()) {
-                    val decoded = com.vitreminder.app.util.RoomDecoder.decode(session.classroom)
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(AccentRed.copy(alpha = 0.15f))
-                            .clickable(enabled = onOpenRoomNavigator != null) {
-                                onOpenRoomNavigator?.invoke(session.classroom)
-                            }
-                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(typeColor.copy(alpha = 0.18f))
+                            .padding(horizontal = 7.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = "📍 Room ${session.classroom} • ${decoded.shortLocation}",
-                            color = AccentRed,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 11.sp
+                            text = session.loadType.uppercase(),
+                            color = typeColor,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 9.5.sp,
+                            letterSpacing = 0.5.sp
                         )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = session.displayTitle,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = if (isPast) TextMuted else TextPrimary
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (session.facultyName.isNotBlank()) "👨‍🏫 ${session.facultyName}" else "",
+                        fontSize = 11.5.sp,
+                        color = TextSecondary,
+                        maxLines = 1,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+
+                    if (session.classroom.isNotBlank()) {
+                        val decoded = com.vitreminder.app.util.RoomDecoder.decode(session.classroom)
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0x22FFFFFF))
+                                .border(0.5.dp, GlassBorder, RoundedCornerShape(8.dp))
+                                .clickable(enabled = onOpenRoomNavigator != null) {
+                                    onOpenRoomNavigator?.invoke(session.classroom)
+                                }
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = "📍 Room ${session.classroom} • ${decoded.shortLocation}",
+                                color = AccentRed,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp
+                            )
+                        }
                     }
                 }
             }

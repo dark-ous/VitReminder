@@ -158,15 +158,16 @@ fun NotesScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(20.dp))
-                                .background(if (isSelected) AccentBlue else CardDark)
+                                .background(if (isSelected) AccentBlue.copy(alpha = 0.2f) else CardDark)
+                                .border(1.dp, if (isSelected) AccentBlue else GlassBorder, RoundedCornerShape(20.dp))
                                 .clickable { selectedFilter = filter }
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                .padding(horizontal = 14.dp, vertical = 7.dp)
                         ) {
                             Text(
                                 text = filter.title,
-                                color = if (isSelected) SurfaceDark else TextSecondary,
+                                color = if (isSelected) TextPrimary else TextSecondary,
                                 fontSize = 12.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                             )
                         }
                     }
@@ -254,14 +255,20 @@ fun NoteItemCard(
     onDelete: () -> Unit
 ) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = CardDark),
-        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (note.isCompleted) CardDark.copy(alpha = 0.5f) else CardDark
+        ),
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            1.dp,
+            if (note.isCompleted) GlassBorder else GlassBorderActive
+        ),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
+                .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Interactive Checkbox
@@ -275,18 +282,18 @@ fun NoteItemCard(
                 )
             )
 
-            Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = note.text,
-                    fontSize = 14.sp,
+                    fontSize = 14.5.sp,
                     color = if (note.isCompleted) TextMuted else TextPrimary,
                     textDecoration = if (note.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
-                    fontWeight = if (note.isCompleted) FontWeight.Normal else FontWeight.Medium
+                    fontWeight = if (note.isCompleted) FontWeight.Normal else FontWeight.SemiBold
                 )
 
-                Spacer(modifier = Modifier.height(3.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -297,13 +304,14 @@ fun NoteItemCard(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
                                 .background(AccentPurple.copy(alpha = 0.15f))
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                .border(0.5.dp, AccentPurple.copy(alpha = 0.3f), RoundedCornerShape(6.dp))
+                                .padding(horizontal = 7.dp, vertical = 2.dp)
                         ) {
                             Text(
                                 text = note.displayTag,
                                 fontSize = 10.sp,
                                 color = AccentPurple,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
@@ -315,7 +323,7 @@ fun NoteItemCard(
 
                     Text(
                         text = dateStr,
-                        fontSize = 10.sp,
+                        fontSize = 10.5.sp,
                         color = TextMuted
                     )
                 }
