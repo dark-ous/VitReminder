@@ -51,9 +51,11 @@ class MainActivity : ComponentActivity() {
                 val errorMessage by viewModel.errorMessage.collectAsState()
                 val successMessage by viewModel.successMessage.collectAsState()
                 val notes by viewModel.notes.collectAsState()
+                val attendanceList by viewModel.attendanceList.collectAsState()
 
                 val snackbarHostState = remember { SnackbarHostState() }
                 var showClearDialog by remember { mutableStateOf(false) }
+                var showAttendanceSheet by remember { mutableStateOf(false) }
 
                 // Document Picker for Upload New Timetable from Top Bar
                 val newPdfPicker = rememberLauncherForActivityResult(
@@ -152,6 +154,14 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 actions = {
+                                    // Attendance 75% Tracker button
+                                    IconButton(onClick = { showAttendanceSheet = true }) {
+                                        Icon(
+                                            Icons.Default.PieChart,
+                                            contentDescription = "75% Attendance Tracker",
+                                            tint = AccentGreen
+                                        )
+                                    }
                                     // Upload / Replace PDF button
                                     IconButton(onClick = { newPdfPicker.launch("application/pdf") }) {
                                         Icon(
@@ -334,6 +344,20 @@ class MainActivity : ComponentActivity() {
                             }
                         },
                         containerColor = CardDark
+                    )
+                }
+
+                // Attendance 75% Tracker BottomSheet
+                if (showAttendanceSheet) {
+                    com.vitreminder.app.ui.components.AttendanceSheet(
+                        attendanceList = attendanceList,
+                        onRecordAttendance = { code, title, attended ->
+                            viewModel.recordAttendance(code, title, attended)
+                        },
+                        onResetCourse = { code ->
+                            viewModel.resetCourseAttendance(code)
+                        },
+                        onDismiss = { showAttendanceSheet = false }
                     )
                 }
             }

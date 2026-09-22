@@ -24,6 +24,7 @@ class TimetableViewModel(application: Application) : AndroidViewModel(applicatio
 
     val repository = TimetableRepository(application)
     val notesRepository = com.vitreminder.app.data.local.NotesRepository(application)
+    val attendanceRepository = com.vitreminder.app.data.local.AttendanceRepository(application)
     private val scheduler = AlarmScheduler(application)
 
     val userSettings: StateFlow<UserSettings> = repository.userSettingsFlow
@@ -31,6 +32,23 @@ class TimetableViewModel(application: Application) : AndroidViewModel(applicatio
 
     val notes: StateFlow<List<com.vitreminder.app.data.model.ClassNote>> = notesRepository.notesFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val attendanceList: StateFlow<List<com.vitreminder.app.data.model.CourseAttendance>> = attendanceRepository.attendanceFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun recordAttendance(courseCode: String, courseTitle: String, attended: Boolean) {
+        viewModelScope.launch {
+            attendanceRepository.recordAttendance(courseCode, courseTitle, attended)
+            _successMessage.value = if (attended) "Marked attended for $courseCode! 📚" else "Marked missed/bunked for $courseCode 🌴"
+        }
+    }
+
+    fun resetCourseAttendance(courseCode: String) {
+        viewModelScope.launch {
+            attendanceRepository.resetCourse(courseCode)
+            _successMessage.value = "Reset attendance for $courseCode"
+        }
+    }
 
     private val _currentTimetable = MutableStateFlow<Timetable?>(repository.preferencesManager.getFastTimetable())
     val currentTimetable: StateFlow<Timetable?> = _currentTimetable.asStateFlow()
@@ -144,6 +162,14 @@ class TimetableViewModel(application: Application) : AndroidViewModel(applicatio
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+            }
+        }
+
+        // Auto-sync courses to attendance tracker
+        viewModelScope.launch {
+            currentTimetable.filterNotNull().collect { tt ->
+                val courses = tt.allSessions.map { it.subjectCode to it.displayTitle }.distinct()
+                attendanceRepository.autoSyncCourses(courses)
             }
         }
     }

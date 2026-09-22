@@ -78,7 +78,14 @@ When you install this APK, you might see a Google Play Protect prompt saying:
 - **VIT Class Schedule Widget**: Displays your current or upcoming class, room number, countdown, and batch on your home screen. Resizable up to 4x3 cells.
 - **VIT Tasks & Notes Widget**: Displays your pending class reminders and lets you check off completed items directly from your home screen without opening the app!
 
-### 5. 🔔 Automated Reminders & Background Sync
+### 5. 📊 VIT 75% Attendance & Bunk Calculator
+- Automatically synchronizes all enrolled course codes and titles from your timetable.
+- Live percentage tracking with visual health bar (Safe $\ge$ 75% vs Danger $<$ 75%).
+- **Bunk Calculator**: Tells you exactly how many lectures you can safely skip without falling below 75%.
+- **Catch-Up Formula**: If below 75%, calculates the exact number of consecutive lectures you must attend to recover.
+- 1-tap `+ Attended` and `+ Bunked` logging buttons right from the top bar.
+
+### 6. 🔔 Automated Reminders & Background Sync
 - Uses Android `AlarmManager` exact alarms to notify you 10 minutes before each class starts.
 - Persistent notification bar showing the ongoing class and countdown.
 - Auto-reschedules alarms on phone reboot via `BootReceiver`.
@@ -112,7 +119,7 @@ When you install this APK, you might see a Google Play Protect prompt saying:
 Contributions, feedback, and suggestions from fellow VITians and open-source developers are welcome!
 
 ### Potential Ideas & Roadmap:
-- [ ] **Attendance Tracker**: Track 75% attendance criteria per course with a 1-tap attend/bunk counter.
+- [x] **75% Attendance & Bunk Calculator** *(Completed!)*
 - [ ] **Campus Map & Room Navigator**: Quick reference map for buildings, labs, and classroom numbers in Bibwewadi & Kondhwa.
 - [ ] **Exam Schedule Mode**: Toggle between regular timetable and In-Sem / End-Sem exam timetables.
 - [ ] **Material You Dynamic Theming**: Color palettes based on your wallpaper (Android 12+).
