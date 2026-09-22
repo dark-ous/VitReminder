@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">VIT Reminder</string>
+    <string name="widget_description">Shows your next VIT class, room number, countdown, and breaks on your home screen.</string>
+    <string name="notes_widget_description">Shows your class reminders, ongoing session notes, and interactive checklists.</string>
+</resources>

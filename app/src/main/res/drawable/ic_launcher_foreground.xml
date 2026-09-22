@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Hexagonal Academic Shield Base -->
+    <path
+        android:strokeWidth="2.5"
+        android:strokeColor="#89B4FA"
+        android:pathData="M54,22 L78,34 L78,64 L54,84 L30,64 L30,34 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="30"
+                android:startY="22"
+                android:endX="78"
+                android:endY="84"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#26314D" />
+                <item android:offset="1.0" android:color="#141724" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Inner Shield Border Highlight -->
+    <path
+        android:strokeWidth="1.2"
+        android:strokeColor="#CBA6F7"
+        android:pathData="M54,26 L74,36 L74,62 L54,79 L34,62 L34,36 Z" />
+
+    <!-- Timetable Grid Accent (Header Bar) -->
+    <path
+        android:fillColor="#89B4FA"
+        android:pathData="M40,39 L68,39 A2,2 0 0 1 70,41 L70,44 L38,44 L38,41 A2,2 0 0 1 40,39 Z" />
+
+    <!-- Grid Body Slots -->
+    <path
+        android:fillColor="#313244"
+        android:pathData="M38,46 L70,46 L70,66 A2,2 0 0 1 68,68 L40,68 A2,2 0 0 1 38,66 Z" />
+
+    <!-- Grid Cells -->
+    <path
+        android:fillColor="#89B4FA"
+        android:pathData="M42,49 h6 v5 h-6 z" />
+    <path
+        android:fillColor="#A6E3A1"
+        android:pathData="M51,49 h6 v5 h-6 z" />
+    <path
+        android:fillColor="#F9E2AF"
+        android:pathData="M60,49 h6 v5 h-6 z" />
+
+    <path
+        android:fillColor="#CBA6F7"
+        android:pathData="M42,57 h15 v7 h-15 z" />
+    <path
+        android:fillColor="#F38BA8"
+        android:pathData="M60,57 h6 v7 h-6 z" />
+
+    <!-- Lightning / Notification Pulse Indicator -->
+    <path
+        android:fillColor="#F9E2AF"
+        android:pathData="M55,30 L50,42 L55,42 L52,52 L60,40 L55,40 Z" />
+
+    <!-- Modern "V" Monogram at Bottom of Shield -->
+    <path
+        android:strokeWidth="2.2"
+        android:strokeColor="#89B4FA"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M48,71 L54,77 L60,71" />
+</vector>
