@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
                 val snackbarHostState = remember { SnackbarHostState() }
                 var showClearDialog by remember { mutableStateOf(false) }
                 var showAttendanceSheet by remember { mutableStateOf(false) }
+                var showRoomNavigatorDialog by remember { mutableStateOf(false) }
 
                 // Document Picker for Upload New Timetable from Top Bar
                 val newPdfPicker = rememberLauncherForActivityResult(
@@ -154,6 +155,14 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 actions = {
+                                    // Classroom Floor & Building Navigator button
+                                    IconButton(onClick = { showRoomNavigatorDialog = true }) {
+                                        Icon(
+                                            Icons.Default.Explore,
+                                            contentDescription = "Classroom Floor Navigator",
+                                            tint = AccentBlue
+                                        )
+                                    }
                                     // Attendance 75% Tracker button
                                     IconButton(onClick = { showAttendanceSheet = true }) {
                                         Icon(
@@ -358,6 +367,14 @@ class MainActivity : ComponentActivity() {
                             viewModel.resetCourseAttendance(code)
                         },
                         onDismiss = { showAttendanceSheet = false }
+                    )
+                }
+
+                // Classroom Floor & Building Navigator Dialog
+                if (showRoomNavigatorDialog) {
+                    com.vitreminder.app.ui.components.RoomInfoDialog(
+                        initialRoom = "",
+                        onDismiss = { showRoomNavigatorDialog = false }
                     )
                 }
             }

@@ -85,7 +85,13 @@ When you install this APK, you might see a Google Play Protect prompt saying:
 - **Catch-Up Formula**: If below 75%, calculates the exact number of consecutive lectures you must attend to recover.
 - 1-tap `+ Attended` and `+ Bunked` logging buttons right from the top bar.
 
-### 6. 🔔 Automated Reminders & Background Sync
+### 6. 🧭 Campus Classroom & Floor Navigator (Room Code Decoder)
+- Algorithmic decoder for VIT's standard 4-digit room codes (e.g. `1203` $\rightarrow$ Building 1, 2nd Floor, Room 3; `4108` $\rightarrow$ Building 4, 1st Floor, Room 8).
+- Decodes special college facility tags: Computer Centers (`CC-1`, `CC-2`, `CC-3`), Workshops (`WS`), Auditorium, and Library.
+- Accessible directly from the top bar (🧭 icon) or by tapping any room badge on your schedule cards.
+- Includes building location tips and staircase/lift guidance for freshers and students.
+
+### 7. 🔔 Automated Reminders & Background Sync
 - Uses Android `AlarmManager` exact alarms to notify you 10 minutes before each class starts.
 - Persistent notification bar showing the ongoing class and countdown.
 - Auto-reschedules alarms on phone reboot via `BootReceiver`.

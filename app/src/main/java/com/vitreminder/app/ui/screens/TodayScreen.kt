@@ -2,6 +2,7 @@ package com.vitreminder.app.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -58,6 +59,7 @@ fun TodayScreen(
 
     var showAddNoteModal by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     var noteModalSession by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<ClassSession?>(null) }
+    var navigatorRoomNumber by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<String?>(null) }
 
     val daysOrder = listOf(
         Calendar.MONDAY to "Monday",
@@ -292,6 +294,9 @@ fun TodayScreen(
                 onAddNoteForSession = { sess ->
                     noteModalSession = sess
                     showAddNoteModal = true
+                },
+                onOpenRoomNavigator = { room ->
+                    navigatorRoomNumber = room
                 }
             )
         }
@@ -352,7 +357,11 @@ fun TodayScreen(
             }
         } else {
             items(displayedSessions) { session ->
-                SessionCard(session = session, currentMinute = if (isShowingNextDay) -1 else currentMinute)
+                SessionCard(
+                    session = session,
+                    currentMinute = if (isShowingNextDay) -1 else currentMinute,
+                    onOpenRoomNavigator = { room -> navigatorRoomNumber = room }
+                )
 
                 // Check if a break follows this session
                 val followingBreak = displayedBreaks.find { it.startTime == session.endTime }
@@ -375,6 +384,13 @@ fun TodayScreen(
             onSaveNote = onAddNote
         )
     }
+
+    if (navigatorRoomNumber != null) {
+        com.vitreminder.app.ui.components.RoomInfoDialog(
+            initialRoom = navigatorRoomNumber!!,
+            onDismiss = { navigatorRoomNumber = null }
+        )
+    }
 }
 
 @Composable
@@ -385,7 +401,8 @@ private fun HeroCard(
     todaySessions: List<ClassSession>,
     currentMinute: Int,
     isNextDayPreview: Boolean = false,
-    onAddNoteForSession: (ClassSession) -> Unit = {}
+    onAddNoteForSession: (ClassSession) -> Unit = {},
+    onOpenRoomNavigator: (String) -> Unit = {}
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = CardDark),
@@ -418,12 +435,27 @@ private fun HeroCard(
                         }
 
                         if (nextSession.classroom.isNotBlank()) {
-                            Text(
-                                text = "📍 Room ${nextSession.classroom}",
-                                color = AccentRed,
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 16.sp
-                            )
+                            val decoded = com.vitreminder.app.util.RoomDecoder.decode(nextSession.classroom)
+                            Column(
+                                horizontalAlignment = Alignment.End,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { onOpenRoomNavigator(nextSession.classroom) }
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "📍 Room ${nextSession.classroom}",
+                                    color = AccentRed,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 15.sp
+                                )
+                                Text(
+                                    text = decoded.shortLocation,
+                                    color = AccentBlue,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 10.sp
+                                )
+                            }
                         }
                     }
 
@@ -468,12 +500,27 @@ private fun HeroCard(
                         }
 
                         if (currentSession.classroom.isNotBlank()) {
-                            Text(
-                                text = "📍 Room ${currentSession.classroom}",
-                                color = AccentRed,
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 16.sp
-                            )
+                            val decoded = com.vitreminder.app.util.RoomDecoder.decode(currentSession.classroom)
+                            Column(
+                                horizontalAlignment = Alignment.End,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { onOpenRoomNavigator(currentSession.classroom) }
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "📍 Room ${currentSession.classroom}",
+                                    color = AccentRed,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 15.sp
+                                )
+                                Text(
+                                    text = decoded.shortLocation,
+                                    color = AccentBlue,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 10.sp
+                                )
+                            }
                         }
                     }
 
@@ -581,12 +628,27 @@ private fun HeroCard(
                         )
 
                         if (nextSession.classroom.isNotBlank()) {
-                            Text(
-                                text = "📍 Room ${nextSession.classroom}",
-                                color = AccentRed,
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 16.sp
-                            )
+                            val decoded = com.vitreminder.app.util.RoomDecoder.decode(nextSession.classroom)
+                            Column(
+                                horizontalAlignment = Alignment.End,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { onOpenRoomNavigator(nextSession.classroom) }
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "📍 Room ${nextSession.classroom}",
+                                    color = AccentRed,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 15.sp
+                                )
+                                Text(
+                                    text = decoded.shortLocation,
+                                    color = AccentBlue,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 10.sp
+                                )
+                            }
                         }
                     }
 
@@ -653,7 +715,11 @@ private fun HeroCard(
 }
 
 @Composable
-private fun SessionCard(session: ClassSession, currentMinute: Int) {
+private fun SessionCard(
+    session: ClassSession,
+    currentMinute: Int,
+    onOpenRoomNavigator: ((String) -> Unit)? = null
+) {
     val isCurrent = currentMinute in session.startMinute until session.endMinute
     val isPast = currentMinute >= session.endMinute
 
@@ -728,17 +794,21 @@ private fun SessionCard(session: ClassSession, currentMinute: Int) {
                 )
 
                 if (session.classroom.isNotBlank()) {
+                    val decoded = com.vitreminder.app.util.RoomDecoder.decode(session.classroom)
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
                             .background(AccentRed.copy(alpha = 0.15f))
+                            .clickable(enabled = onOpenRoomNavigator != null) {
+                                onOpenRoomNavigator?.invoke(session.classroom)
+                            }
                             .padding(horizontal = 8.dp, vertical = 3.dp)
                     ) {
                         Text(
-                            text = "📍 Room ${session.classroom}",
+                            text = "📍 Room ${session.classroom} • ${decoded.shortLocation}",
                             color = AccentRed,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
+                            fontSize = 11.sp
                         )
                     }
                 }
